@@ -1,0 +1,39 @@
+[package]
+name = "pcal6416a"
+version = "0.1.0"
+repository = "https://github.com/pop-project/pcal6416a"
+license = "MIT"
+description = "Platform-agnostic Rust driver for the Texas Instruments BQ25773 battery charge controller."
+readme = "README.md"
+keywords = ["pcal6416a", "NXP", "IO Expander", "i2c", "driver", "embedded-hal-driver"]
+categories = ["embedded", "hardware-support", "no-std"]
+documentation = "https://docs.rs/pcal6416a"
+include = [
+	"/**/*.rs",
+	"/Cargo.toml",
+	"/README.md",
+	"/LICENSE",
+	"/device.yaml",
+]
+edition = "2021"
+
+[dependencies]
+device-driver = { version = "=1.0.0-rc.1", default-features = false, features = ["yaml"] }
+defmt = { version = "0.3", optional = true }
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"
+
+
+[lints.clippy]
+correctness = "forbid"
+suspicious = "forbid"
+perf = "forbid"
+style = "forbid"
+pedantic = "deny"
+
+[features]
+defmt-03 = ["dep:defmt", "device-driver/defmt-03"]
