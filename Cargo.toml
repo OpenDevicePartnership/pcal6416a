@@ -1,7 +1,7 @@
 [package]
 name = "pcal6416a"
 version = "0.1.0"
-repository = "https://github.com/pop-project/pcal6416a"
+repository = "https://github.com/OpenDevicePartnership/pcal6416a"
 license = "MIT"
 description = "Platform-agnostic Rust driver for the Texas Instruments BQ25773 battery charge controller."
 readme = "README.md"
