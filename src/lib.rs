@@ -71,8 +71,9 @@ impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface fo
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use embedded_hal_mock::eh1::i2c::{Mock, Transaction};
+
+    use super::*;
 
     #[tokio::test]
     async fn read_output_port_0() {
