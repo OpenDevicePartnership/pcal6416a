@@ -83,13 +83,13 @@ jobs:
     # https://doc.rust-lang.org/beta/unstable-book/language-features/doc-cfg.html which allows an
     # API be documented as only available in some specific platforms.
     runs-on: ubuntu-latest
-    name: nightly / doc
+    name: stable / doc
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Install nightly
-        uses: dtolnay/rust-toolchain@nightly
+      - name: Install stable
+        uses: dtolnay/rust-toolchain@stable
       - name: cargo doc
         run: cargo doc --no-deps --all-features
         env:
@@ -153,6 +153,7 @@ jobs:
                        # collapse_debuginfo
                        #
                        # device-driver requires 1.85
+        toolchain: [stable]
     name: ubuntu / ${{ matrix.msrv }}
     steps:
       - uses: actions/checkout@v4
@@ -161,6 +162,6 @@ jobs:
       - name: Install ${{ matrix.msrv }}
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: ${{ matrix.msrv }}
-      - name: cargo +${{ matrix.msrv }} check
+          toolchain: ${{ matrix.toolchain }}
+      - name: cargo +${{ matrix.toolchain }} check
         run: cargo check
