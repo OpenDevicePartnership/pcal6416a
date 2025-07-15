@@ -15,7 +15,7 @@ include = [
 	"/LICENSE",
 	"/device.yaml",
 ]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 device-driver = { version = "1.0.3", default-features = false, features = ["yaml"] }
