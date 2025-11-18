@@ -22,12 +22,14 @@ const IOEXP_ADDR_LOW: u8 = 0x20;
 const IOEXP_ADDR_HIGH: u8 = 0x21;
 const LARGEST_REG_SIZE_BYTES: usize = 2;
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub enum AddrPinState {
     High,
     Low,
 }
 
 impl AddrPinState {
+    #[must_use]
     pub fn address(&self) -> u8 {
         match self {
             Self::High => IOEXP_ADDR_HIGH,
