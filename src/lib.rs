@@ -18,10 +18,28 @@ pub enum Pcal6416aError<E> {
     /// I2C bus error
     I2c(E),
 }
-const IOEXP_ADDR: u8 = 0x20;
+const IOEXP_ADDR_LOW: u8 = 0x20;
+const IOEXP_ADDR_HIGH: u8 = 0x21;
 const LARGEST_REG_SIZE_BYTES: usize = 2;
 
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+pub enum AddrPinState {
+    High,
+    Low,
+}
+
+impl AddrPinState {
+    #[must_use]
+    pub fn address(&self) -> u8 {
+        match self {
+            Self::High => IOEXP_ADDR_HIGH,
+            Self::Low => IOEXP_ADDR_LOW,
+        }
+    }
+}
+
 pub struct Pcal6416aDevice<I2c: embedded_hal_async::i2c::I2c> {
+    pub addr_pin: AddrPinState,
     pub i2cbus: I2c,
 }
 
@@ -51,7 +69,7 @@ impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface fo
         // we pass in a slice of the appropriate size so we do not accidentally write to the register at
         // address + 1 when writing to a 1 byte register
         self.i2cbus
-            .write(IOEXP_ADDR, &buf[..=data.len()])
+            .write(self.addr_pin.address(), &buf[..=data.len()])
             .await
             .map_err(Pcal6416aError::I2c)
     }
@@ -63,7 +81,7 @@ impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface fo
         data: &mut [u8],
     ) -> Result<(), Self::Error> {
         self.i2cbus
-            .write_read(IOEXP_ADDR, &[address], data)
+            .write_read(self.addr_pin.address(), &[address], data)
             .await
             .map_err(Pcal6416aError::I2c)
     }
@@ -77,9 +95,12 @@ mod tests {
 
     #[tokio::test]
     async fn read_output_port_0() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR, vec![0x02], vec![0b01000011])];
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b01000011])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         let output_port_0 = dev.output_port_0().read_async().await.unwrap();
         assert_eq!(output_port_0.o_0_7(), false);
         assert_eq!(output_port_0.o_0_6(), true);
@@ -94,9 +115,12 @@ mod tests {
 
     #[tokio::test]
     async fn write_output_port_0() {
-        let expectations = vec![Transaction::write(IOEXP_ADDR, vec![0x02, 0b11110101])];
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b11110101])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         dev.output_port_0()
             .write_async(|c| {
                 c.set_o_0_7(true);
@@ -115,9 +139,12 @@ mod tests {
 
     #[tokio::test]
     async fn read_output_port_1() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR, vec![0x03], vec![0b01010010])];
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b01010010])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         let output_port_1 = dev.output_port_1().read_async().await.unwrap();
         assert_eq!(output_port_1.o_1_7(), false);
         assert_eq!(output_port_1.o_1_6(), true);
@@ -132,9 +159,12 @@ mod tests {
 
     #[tokio::test]
     async fn write_output_port_1() {
-        let expectations = vec![Transaction::write(IOEXP_ADDR, vec![0x03, 0b11010101])];
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b11010101])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         dev.output_port_1()
             .write_async(|c| {
                 c.set_o_1_7(true);
@@ -153,9 +183,12 @@ mod tests {
 
     #[tokio::test]
     async fn read_config_port_0() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR, vec![0x06], vec![0b01010111])];
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x06], vec![0b01010111])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         let config_port_0 = dev.config_port_0().read_async().await.unwrap();
         assert_eq!(config_port_0.c_0_7(), false);
         assert_eq!(config_port_0.c_0_6(), true);
@@ -170,9 +203,12 @@ mod tests {
 
     #[tokio::test]
     async fn write_config_port_0() {
-        let expectations = vec![Transaction::write(IOEXP_ADDR, vec![0x06, 0b01010101])];
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x06, 0b01010101])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         dev.config_port_0()
             .write_async(|c| {
                 c.set_c_0_7(false);
@@ -191,9 +227,12 @@ mod tests {
 
     #[tokio::test]
     async fn read_config_port_1() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR, vec![0x07], vec![0b01110111])];
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x07], vec![0b01110111])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         let config_port_1 = dev.config_port_1().read_async().await.unwrap();
         assert_eq!(config_port_1.c_1_7(), false);
         assert_eq!(config_port_1.c_1_6(), true);
@@ -208,9 +247,12 @@ mod tests {
 
     #[tokio::test]
     async fn write_config_port_1() {
-        let expectations = vec![Transaction::write(IOEXP_ADDR, vec![0x07, 0b11110101])];
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x07, 0b11110101])];
         let i2cbus = Mock::new(&expectations);
-        let mut dev = Device::new(Pcal6416aDevice { i2cbus });
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
         dev.config_port_1()
             .write_async(|c| {
                 c.set_c_1_7(true);
@@ -224,6 +266,78 @@ mod tests {
             })
             .await
             .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn write_low_address() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x07, 0])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.config_port_1()
+            .write_async(|c| {
+                c.set_c_1_7(false);
+                c.set_c_1_6(false);
+                c.set_c_1_5(false);
+                c.set_c_1_4(false);
+                c.set_c_1_3(false);
+                c.set_c_1_2(false);
+                c.set_c_1_1(false);
+                c.set_c_1_0(false);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn write_high_address() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_HIGH, vec![0x07, 0x0])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::High,
+            i2cbus,
+        });
+        dev.config_port_1()
+            .write_async(|c| {
+                c.set_c_1_7(false);
+                c.set_c_1_6(false);
+                c.set_c_1_5(false);
+                c.set_c_1_4(false);
+                c.set_c_1_3(false);
+                c.set_c_1_2(false);
+                c.set_c_1_1(false);
+                c.set_c_1_0(false);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn read_low_address() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x07], vec![0x0])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        let _ = dev.config_port_1().read_async().await.unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn read_high_address() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_HIGH, vec![0x07], vec![0x0])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::High,
+            i2cbus,
+        });
+        let _ = dev.config_port_1().read_async().await.unwrap();
         dev.interface.i2cbus.done();
     }
 }
