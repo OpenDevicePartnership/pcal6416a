@@ -13,7 +13,7 @@
 #![allow(missing_docs)]
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(feature = "defmt-03", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Pcal6416aError<E> {
     /// I2C bus error
     I2c(E),

@@ -2,7 +2,7 @@ config:
   register_address_type: u8
   default_byte_order: LE
   default_bit_order: LSB0
-  defmt_feature: defmt-03
+  defmt_feature: defmt
 
 OUTPUT_PORT0:
   type: register
