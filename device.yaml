@@ -4,6 +4,84 @@ config:
   default_bit_order: LSB0
   defmt_feature: defmt-03
 
+INPUT_PORT0:
+  type: register
+  address: 0x00
+  size_bits: 8
+  access: ReadOnly
+  fields:
+    I0_0:
+      base: bool
+      start: 0
+      description: Input Port 0 Pin 0. Reflects the incoming logic level of the pin.
+    I0_1:
+      base: bool
+      start: 1
+      description: Input Port 0 Pin 1. Reflects the incoming logic level of the pin.
+    I0_2:
+      base: bool
+      start: 2
+      description: Input Port 0 Pin 2. Reflects the incoming logic level of the pin.
+    I0_3:
+      base: bool
+      start: 3
+      description: Input Port 0 Pin 3. Reflects the incoming logic level of the pin.
+    I0_4:
+      base: bool
+      start: 4
+      description: Input Port 0 Pin 4. Reflects the incoming logic level of the pin.
+    I0_5:
+      base: bool
+      start: 5
+      description: Input Port 0 Pin 5. Reflects the incoming logic level of the pin.
+    I0_6:
+      base: bool
+      start: 6
+      description: Input Port 0 Pin 6. Reflects the incoming logic level of the pin.
+    I0_7:
+      base: bool
+      start: 7
+      description: Input Port 0 Pin 7. Reflects the incoming logic level of the pin.
+
+INPUT_PORT1:
+  type: register
+  address: 0x01
+  size_bits: 8
+  access: ReadOnly
+  fields:
+    I1_0:
+      base: bool
+      start: 0
+      description: Input Port 1 Pin 0. Reflects the incoming logic level of the pin.
+    I1_1:
+      base: bool
+      start: 1
+      description: Input Port 1 Pin 1. Reflects the incoming logic level of the pin.
+    I1_2:
+      base: bool
+      start: 2
+      description: Input Port 1 Pin 2. Reflects the incoming logic level of the pin.
+    I1_3:
+      base: bool
+      start: 3
+      description: Input Port 1 Pin 3. Reflects the incoming logic level of the pin.
+    I1_4:
+      base: bool
+      start: 4
+      description: Input Port 1 Pin 4. Reflects the incoming logic level of the pin.
+    I1_5:
+      base: bool
+      start: 5
+      description: Input Port 1 Pin 5. Reflects the incoming logic level of the pin.
+    I1_6:
+      base: bool
+      start: 6
+      description: Input Port 1 Pin 6. Reflects the incoming logic level of the pin.
+    I1_7:
+      base: bool
+      start: 7
+      description: Input Port 1 Pin 7. Reflects the incoming logic level of the pin.
+
 OUTPUT_PORT0:
   type: register
   address: 0x02
@@ -158,3 +236,159 @@ CONFIG_PORT1:
       base: bool
       start: 7
       description:  Config Port 1 Pin 7. Host clears this bit to set the pin as an output. Bit is set by default and configures the pin as an input.
+
+PULL_UP_DOWN_ENABLE_PORT0:
+  type: register
+  address: 0x46
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    PE0_0:
+      base: bool
+      start: 0
+      description: Pull-up/Pull-down Enable Port 0 Pin 0. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_1:
+      base: bool
+      start: 1
+      description: Pull-up/Pull-down Enable Port 0 Pin 1. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_2:
+      base: bool
+      start: 2
+      description: Pull-up/Pull-down Enable Port 0 Pin 2. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_3:
+      base: bool
+      start: 3
+      description: Pull-up/Pull-down Enable Port 0 Pin 3. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_4:
+      base: bool
+      start: 4
+      description: Pull-up/Pull-down Enable Port 0 Pin 4. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_5:
+      base: bool
+      start: 5
+      description: Pull-up/Pull-down Enable Port 0 Pin 5. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_6:
+      base: bool
+      start: 6
+      description: Pull-up/Pull-down Enable Port 0 Pin 6. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE0_7:
+      base: bool
+      start: 7
+      description: Pull-up/Pull-down Enable Port 0 Pin 7. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+
+PULL_UP_DOWN_ENABLE_PORT1:
+  type: register
+  address: 0x47
+  size_bits: 8
+  reset_value: 0x00
+  fields:
+    PE1_0:
+      base: bool
+      start: 0
+      description: Pull-up/Pull-down Enable Port 1 Pin 0. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_1:
+      base: bool
+      start: 1
+      description: Pull-up/Pull-down Enable Port 1 Pin 1. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_2:
+      base: bool
+      start: 2
+      description: Pull-up/Pull-down Enable Port 1 Pin 2. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_3:
+      base: bool
+      start: 3
+      description: Pull-up/Pull-down Enable Port 1 Pin 3. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_4:
+      base: bool
+      start: 4
+      description: Pull-up/Pull-down Enable Port 1 Pin 4. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_5:
+      base: bool
+      start: 5
+      description: Pull-up/Pull-down Enable Port 1 Pin 5. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_6:
+      base: bool
+      start: 6
+      description: Pull-up/Pull-down Enable Port 1 Pin 6. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+    PE1_7:
+      base: bool
+      start: 7
+      description: Pull-up/Pull-down Enable Port 1 Pin 7. Host clears this bit to disable Pull-up/Pull-down resistor for the pin. Set the bit to enable Pull-up/Pull-down resistors for the pin.
+
+PULL_UP_DOWN_SELECT_PORT0:
+  type: register
+  address: 0x48
+  size_bits: 8
+  reset_value: 0xFF
+  fields:
+    PUD0_0:
+      base: bool
+      start: 0
+      description: Pull-up/Pull-down Selection Port 0 Pin 0. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_1:
+      base: bool
+      start: 1
+      description: Pull-up/Pull-down Selection Port 0 Pin 1. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_2:
+      base: bool
+      start: 2
+      description: Pull-up/Pull-down Selection Port 0 Pin 2. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_3:
+      base: bool
+      start: 3
+      description: Pull-up/Pull-down Selection Port 0 Pin 3. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_4:
+      base: bool
+      start: 4
+      description: Pull-up/Pull-down Selection Port 0 Pin 4. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_5:
+      base: bool
+      start: 5
+      description: Pull-up/Pull-down Selection Port 0 Pin 5. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_6:
+      base: bool
+      start: 6
+      description: Pull-up/Pull-down Selection Port 0 Pin 6. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD0_7:
+      base: bool
+      start: 7
+      description: Pull-up/Pull-down Selection Port 0 Pin 7. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+
+PULL_UP_DOWN_SELECT_PORT1:
+  type: register
+  address: 0x49
+  size_bits: 8
+  reset_value: 0xFF
+  fields:
+    PUD1_0:
+      base: bool
+      start: 0
+      description: Pull-up/Pull-down Selection Port 1 Pin 0. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_1:
+      base: bool
+      start: 1
+      description: Pull-up/Pull-down Selection Port 1 Pin 1. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_2:
+      base: bool
+      start: 2
+      description: Pull-up/Pull-down Selection Port 1 Pin 2. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_3:
+      base: bool
+      start: 3
+      description: Pull-up/Pull-down Selection Port 1 Pin 3. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_4:
+      base: bool
+      start: 4
+      description: Pull-up/Pull-down Selection Port 1 Pin 4. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_5:
+      base: bool
+      start: 5
+      description: Pull-up/Pull-down Selection Port 1 Pin 5. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_6:
+      base: bool
+      start: 6
+      description: Pull-up/Pull-down Selection Port 1 Pin 6. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
+    PUD1_7:
+      base: bool
+      start: 7
+      description: Pull-up/Pull-down Selection Port 1 Pin 7. Host clears this bit enables a 100 kΩ pull-down resistor for the pin. Set the bit to enable a 100 kΩ pull-up resistor.
