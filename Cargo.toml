@@ -1,6 +1,6 @@
 [package]
 name = "pcal6416a"
-version = "0.2.0"
+version = "0.3.0"
 repository = "https://github.com/OpenDevicePartnership/pcal6416a"
 license = "MIT"
 description = "Platform-agnostic Rust driver for the NXP PCAL6416A I/O expander."
