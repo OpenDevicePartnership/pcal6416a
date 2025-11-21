@@ -574,6 +574,93 @@ mod tests {
     }
 
     #[test]
+    fn read_pull_up_down_enable_port_0() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x46], vec![0b00111010])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        let pull_up_down_enable_port_0 = dev.pull_up_down_enable_port_0().read().unwrap();
+        assert_eq!(pull_up_down_enable_port_0.pe_0_7(), false);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_6(), false);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_5(), true);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_4(), true);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_3(), true);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_2(), false);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_1(), true);
+        assert_eq!(pull_up_down_enable_port_0.pe_0_0(), false);
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn write_pull_up_down_enable_port_0_async() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x46, 0b00111010])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_enable_port_0()
+            .write_async(|c| {
+                c.set_pe_0_7(false);
+                c.set_pe_0_6(false);
+                c.set_pe_0_5(true);
+                c.set_pe_0_4(true);
+                c.set_pe_0_3(true);
+                c.set_pe_0_2(false);
+                c.set_pe_0_1(true);
+                c.set_pe_0_0(false);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn write_pull_up_down_enable_port_0() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x46, 0b00111010])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_enable_port_0()
+            .write(|c| {
+                c.set_pe_0_7(false);
+                c.set_pe_0_6(false);
+                c.set_pe_0_5(true);
+                c.set_pe_0_4(true);
+                c.set_pe_0_3(true);
+                c.set_pe_0_2(false);
+                c.set_pe_0_1(true);
+                c.set_pe_0_0(false);
+            })
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn read_pull_up_down_enable_port_1_async() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x47], vec![0b11101100])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        let pull_up_down_enable_port_1 = dev.pull_up_down_enable_port_1().read_async().await.unwrap();
+        assert_eq!(pull_up_down_enable_port_1.pe_1_7(), true);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_6(), true);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_5(), true);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_4(), false);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_3(), true);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_2(), true);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_1(), false);
+        assert_eq!(pull_up_down_enable_port_1.pe_1_0(), false);
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
     fn read_pull_up_down_enable_port_1() {
         let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x47], vec![0b11101100])];
         let i2cbus = Mock::new(&expectations);
@@ -590,6 +677,53 @@ mod tests {
         assert_eq!(pull_up_down_enable_port_1.pe_1_2(), true);
         assert_eq!(pull_up_down_enable_port_1.pe_1_1(), false);
         assert_eq!(pull_up_down_enable_port_1.pe_1_0(), false);
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn write_pull_up_down_enable_port_1_async() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x47, 0b01011100])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_enable_port_1()
+            .write_async(|c| {
+                c.set_pe_1_7(false);
+                c.set_pe_1_6(true);
+                c.set_pe_1_5(false);
+                c.set_pe_1_4(true);
+                c.set_pe_1_3(true);
+                c.set_pe_1_2(true);
+                c.set_pe_1_1(false);
+                c.set_pe_1_0(false);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn write_pull_up_down_enable_port_1() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x47, 0b11101010])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_enable_port_1()
+            .write(|c| {
+                c.set_pe_1_7(true);
+                c.set_pe_1_6(true);
+                c.set_pe_1_5(true);
+                c.set_pe_1_4(false);
+                c.set_pe_1_3(true);
+                c.set_pe_1_2(false);
+                c.set_pe_1_1(true);
+                c.set_pe_1_0(false);
+            })
+            .unwrap();
         dev.interface.i2cbus.done();
     }
 
@@ -634,6 +768,53 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn write_pull_up_down_select_port_0_async() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x48, 0b01011001])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_select_port_0()
+            .write_async(|c| {
+                c.set_pud_0_7(false);
+                c.set_pud_0_6(true);
+                c.set_pud_0_5(false);
+                c.set_pud_0_4(true);
+                c.set_pud_0_3(true);
+                c.set_pud_0_2(false);
+                c.set_pud_0_1(false);
+                c.set_pud_0_0(true);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn write_pull_up_down_select_port_0() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x48, 0b11101010])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_select_port_0()
+            .write(|c| {
+                c.set_pud_0_7(true);
+                c.set_pud_0_6(true);
+                c.set_pud_0_5(true);
+                c.set_pud_0_4(false);
+                c.set_pud_0_3(true);
+                c.set_pud_0_2(false);
+                c.set_pud_0_1(true);
+                c.set_pud_0_0(false);
+            })
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
     async fn read_pull_up_down_select_port_1_async() {
         let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x49], vec![0b01100111])];
         let i2cbus = Mock::new(&expectations);
@@ -670,6 +851,53 @@ mod tests {
         assert_eq!(pull_up_down_select_port_1.pud_1_2(), true);
         assert_eq!(pull_up_down_select_port_1.pud_1_1(), true);
         assert_eq!(pull_up_down_select_port_1.pud_1_0(), true);
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn write_pull_up_down_select_port_1_async() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x49, 0b00011011])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_select_port_1()
+            .write_async(|c| {
+                c.set_pud_1_7(false);
+                c.set_pud_1_6(false);
+                c.set_pud_1_5(false);
+                c.set_pud_1_4(true);
+                c.set_pud_1_3(true);
+                c.set_pud_1_2(false);
+                c.set_pud_1_1(true);
+                c.set_pud_1_0(true);
+            })
+            .await
+            .unwrap();
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn write_pull_up_down_select_port_1() {
+        let expectations = vec![Transaction::write(IOEXP_ADDR_LOW, vec![0x49, 0b00011011])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+        dev.pull_up_down_select_port_1()
+            .write(|c| {
+                c.set_pud_1_7(false);
+                c.set_pud_1_6(false);
+                c.set_pud_1_5(false);
+                c.set_pud_1_4(true);
+                c.set_pud_1_3(true);
+                c.set_pud_1_2(false);
+                c.set_pud_1_1(true);
+                c.set_pud_1_0(true);
+            })
+            .unwrap();
         dev.interface.i2cbus.done();
     }
 
