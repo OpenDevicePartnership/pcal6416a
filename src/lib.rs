@@ -124,92 +124,56 @@ impl<I2c: embedded_hal::i2c::I2c> device_driver::RegisterInterface for Pcal6416a
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Pin {
     /// Pin 0 (Port 0, bit 0)
-    Pin0,
+    Pin0 = 0,
     /// Pin 1 (Port 0, bit 1)
-    Pin1,
+    Pin1 = 1,
     /// Pin 2 (Port 0, bit 2)
-    Pin2,
+    Pin2 = 2,
     /// Pin 3 (Port 0, bit 3)
-    Pin3,
+    Pin3 = 3,
     /// Pin 4 (Port 0, bit 4)
-    Pin4,
+    Pin4 = 4,
     /// Pin 5 (Port 0, bit 5)
-    Pin5,
+    Pin5 = 5,
     /// Pin 6 (Port 0, bit 6)
-    Pin6,
+    Pin6 = 6,
     /// Pin 7 (Port 0, bit 7)
-    Pin7,
+    Pin7 = 7,
     /// Pin 8 (Port 1, bit 0)
-    Pin8,
+    Pin8 = 8,
     /// Pin 9 (Port 1, bit 1)
-    Pin9,
+    Pin9 = 9,
     /// Pin 10 (Port 1, bit 2)
-    Pin10,
+    Pin10 = 10,
     /// Pin 11 (Port 1, bit 3)
-    Pin11,
+    Pin11 = 11,
     /// Pin 12 (Port 1, bit 4)
-    Pin12,
+    Pin12 = 12,
     /// Pin 13 (Port 1, bit 5)
-    Pin13,
+    Pin13 = 13,
     /// Pin 14 (Port 1, bit 6)
-    Pin14,
+    Pin14 = 14,
     /// Pin 15 (Port 1, bit 7)
-    Pin15,
+    Pin15 = 15,
 }
 
 impl Pin {
     /// Get the port number (0 or 1)
     #[must_use]
     const fn port(self) -> u8 {
-        match self {
-            Self::Pin0 | Self::Pin1 | Self::Pin2 | Self::Pin3 | Self::Pin4 | Self::Pin5 | Self::Pin6 | Self::Pin7 => 0,
-            Self::Pin8
-            | Self::Pin9
-            | Self::Pin10
-            | Self::Pin11
-            | Self::Pin12
-            | Self::Pin13
-            | Self::Pin14
-            | Self::Pin15 => 1,
-        }
+        (self as u8) / 8
     }
 
     /// Get the bit position within the port (0-7)
     #[must_use]
     const fn bit(self) -> u8 {
-        match self {
-            Self::Pin0 | Self::Pin8 => 0,
-            Self::Pin1 | Self::Pin9 => 1,
-            Self::Pin2 | Self::Pin10 => 2,
-            Self::Pin3 | Self::Pin11 => 3,
-            Self::Pin4 | Self::Pin12 => 4,
-            Self::Pin5 | Self::Pin13 => 5,
-            Self::Pin6 | Self::Pin14 => 6,
-            Self::Pin7 | Self::Pin15 => 7,
-        }
+        (self as u8) % 8
     }
 
     /// Get the pin number (0-15)
     #[must_use]
-    pub const fn number(&self) -> u8 {
-        match self {
-            Self::Pin0 => 0,
-            Self::Pin1 => 1,
-            Self::Pin2 => 2,
-            Self::Pin3 => 3,
-            Self::Pin4 => 4,
-            Self::Pin5 => 5,
-            Self::Pin6 => 6,
-            Self::Pin7 => 7,
-            Self::Pin8 => 8,
-            Self::Pin9 => 9,
-            Self::Pin10 => 10,
-            Self::Pin11 => 11,
-            Self::Pin12 => 12,
-            Self::Pin13 => 13,
-            Self::Pin14 => 14,
-            Self::Pin15 => 15,
-        }
+    pub const fn pin(self) -> u8 {
+        self as u8
     }
 }
 
