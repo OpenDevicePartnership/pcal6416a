@@ -1674,25 +1674,37 @@ mod tests {
 
     #[test]
     fn input_pin_is_high() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x01], vec![0b1000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
             i2cbus,
         });
         assert!(dev.is_pin_high(Pin::Pin0).unwrap());
+        assert!(dev.is_pin_high(Pin::Pin15).unwrap());
         dev.interface.i2cbus.done();
     }
 
     #[test]
     fn input_pin_is_low() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x01], vec![0b0000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
             i2cbus,
         });
         assert!(dev.is_pin_low(Pin::Pin0).unwrap());
+        assert!(dev.is_pin_low(Pin::Pin15).unwrap());
         dev.interface.i2cbus.done();
     }
 
@@ -1711,8 +1723,12 @@ mod tests {
     #[test]
     fn output_pin_set_high() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b1000_0000]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -1720,14 +1736,19 @@ mod tests {
             i2cbus,
         });
         dev.set_pin_high(Pin::Pin0).unwrap();
+        dev.set_pin_high(Pin::Pin15).unwrap();
         dev.interface.i2cbus.done();
     }
 
     #[test]
     fn output_pin_set_low() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b1111_1111]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b1111_1110]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1111_1111]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b0111_1111]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -1735,6 +1756,7 @@ mod tests {
             i2cbus,
         });
         dev.set_pin_low(Pin::Pin0).unwrap();
+        dev.set_pin_low(Pin::Pin15).unwrap();
         dev.interface.i2cbus.done();
     }
 
@@ -1756,8 +1778,12 @@ mod tests {
     #[test]
     fn toggle_pin() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b0000_0000]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -1765,18 +1791,25 @@ mod tests {
             i2cbus,
         });
         dev.toggle_pin(Pin::Pin0).unwrap();
+        dev.toggle_pin(Pin::Pin15).unwrap();
         dev.interface.i2cbus.done();
     }
 
     #[test]
     fn is_pin_set_high() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
             i2cbus,
         });
         assert!(dev.is_pin_set_high(Pin::Pin0).unwrap());
+        assert!(dev.is_pin_set_high(Pin::Pin15).unwrap());
         dev.interface.i2cbus.done();
     }
 
@@ -1961,8 +1994,12 @@ mod tests {
     #[tokio::test]
     async fn async_pin_set_high() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b1000_0000]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -1973,6 +2010,7 @@ mod tests {
         {
             let pins = dev.split();
             pins[0].set_high_async().await.unwrap();
+            pins[15].set_high_async().await.unwrap();
         }
 
         dev.interface.i2cbus.done();
@@ -1981,8 +2019,12 @@ mod tests {
     #[tokio::test]
     async fn async_pin_set_low() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b0000_0000]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -1993,6 +2035,7 @@ mod tests {
         {
             let pins = dev.split();
             pins[0].set_low_async().await.unwrap();
+            pins[15].set_low_async().await.unwrap();
         }
 
         dev.interface.i2cbus.done();
@@ -2000,7 +2043,12 @@ mod tests {
 
     #[tokio::test]
     async fn async_pin_is_high() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x01], vec![0b1000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
@@ -2010,6 +2058,7 @@ mod tests {
         {
             let pins = dev.split();
             assert!(pins[0].is_high_async().await.unwrap());
+            assert!(pins[15].is_high_async().await.unwrap());
         }
 
         dev.interface.i2cbus.done();
@@ -2017,7 +2066,12 @@ mod tests {
 
     #[tokio::test]
     async fn async_pin_is_low() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x01], vec![0b0000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
@@ -2027,6 +2081,7 @@ mod tests {
         {
             let pins = dev.split();
             assert!(pins[0].is_low_async().await.unwrap());
+            assert!(pins[15].is_low_async().await.unwrap());
         }
 
         dev.interface.i2cbus.done();
@@ -2035,8 +2090,12 @@ mod tests {
     #[tokio::test]
     async fn async_pin_toggle() {
         let expectations = vec![
+            // Port 0 pin
             Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
             Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x03, 0b0000_0000]),
         ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
@@ -2047,6 +2106,7 @@ mod tests {
         {
             let pins = dev.split();
             pins[0].toggle_async().await.unwrap();
+            pins[15].toggle_async().await.unwrap();
         }
 
         dev.interface.i2cbus.done();
@@ -2054,7 +2114,12 @@ mod tests {
 
     #[tokio::test]
     async fn async_pin_is_set_high() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b1000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
@@ -2064,6 +2129,7 @@ mod tests {
         {
             let pins = dev.split();
             assert!(pins[0].is_set_high_async().await.unwrap());
+            assert!(pins[15].is_set_high_async().await.unwrap());
         }
 
         dev.interface.i2cbus.done();
@@ -2071,7 +2137,12 @@ mod tests {
 
     #[tokio::test]
     async fn async_pin_is_set_low() {
-        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000])];
+        let expectations = vec![
+            // Port 0 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            // Port 1 pin
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x03], vec![0b0000_0000]),
+        ];
         let i2cbus = Mock::new(&expectations);
         let mut dev = Device::new(Pcal6416aDevice {
             addr_pin: AddrPinState::Low,
@@ -2081,6 +2152,7 @@ mod tests {
         {
             let pins = dev.split();
             assert!(pins[0].is_set_low_async().await.unwrap());
+            assert!(pins[15].is_set_low_async().await.unwrap());
         }
 
         dev.interface.i2cbus.done();
