@@ -18,6 +18,13 @@ pub enum Pcal6416aError<E> {
     /// I2C bus error
     I2c(E),
 }
+
+impl<E: core::fmt::Debug> embedded_hal::digital::Error for Pcal6416aError<E> {
+    fn kind(&self) -> embedded_hal::digital::ErrorKind {
+        embedded_hal::digital::ErrorKind::Other
+    }
+}
+
 const IOEXP_ADDR_LOW: u8 = 0x20;
 const IOEXP_ADDR_HIGH: u8 = 0x21;
 const LARGEST_REG_SIZE_BYTES: usize = 2;
@@ -213,6 +220,205 @@ impl Pin {
     }
 }
 
+/// Individual pin instance that provides GPIO operations for a single pin
+///
+/// This struct is created by calling `split()` on a `Device` instance.
+/// It provides methods to read and write the state of a single pin without
+/// requiring access to the entire device.
+///
+/// Note: This uses `UnsafeCell` for interior mutability. While this uses unsafe
+/// internally, the API is designed to be safe when pins are not used concurrently
+/// (which is the normal case in embedded contexts).
+pub struct IoPin<'a, I2c> {
+    pin: Pin,
+    device: &'a core::cell::UnsafeCell<Device<Pcal6416aDevice<I2c>>>,
+}
+
+impl<'a, I2c> IoPin<'a, I2c> {
+    const fn new(pin: Pin, device: &'a core::cell::UnsafeCell<Device<Pcal6416aDevice<I2c>>>) -> Self {
+        Self { pin, device }
+    }
+
+    /// Get the pin number (0-15)
+    #[must_use]
+    pub const fn number(&self) -> u8 {
+        self.pin.number()
+    }
+
+    /// Get the Pin enum for this pin
+    #[must_use]
+    pub const fn pin(&self) -> Pin {
+        self.pin
+    }
+}
+
+impl<I2c: embedded_hal::i2c::I2c> IoPin<'_, I2c> {
+    /// Read the state of this input pin
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn is_high(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_high(self.pin) }
+    }
+
+    /// Read the state of this input pin
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn is_low(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_low(self.pin) }
+    }
+
+    /// Set this output pin to high state
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn set_high(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).set_pin_high(self.pin) }
+    }
+
+    /// Set this output pin to low state
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn set_low(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).set_pin_low(self.pin) }
+    }
+
+    /// Toggle this output pin state
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn toggle(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).toggle_pin(self.pin) }
+    }
+
+    /// Read the current state of this output pin
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn is_set_high(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_set_high(self.pin) }
+    }
+
+    /// Read the current state of this output pin
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub fn is_set_low(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_set_low(self.pin) }
+    }
+}
+
+impl<I2c: embedded_hal_async::i2c::I2c> IoPin<'_, I2c> {
+    /// Read the state of this input pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_high_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_high_async(self.pin).await }
+    }
+
+    /// Read the state of this input pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_low_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        Ok(!self.is_high_async().await?)
+    }
+
+    /// Set this output pin to high state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn set_high_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).set_pin_high_async(self.pin).await }
+    }
+
+    /// Set this output pin to low state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn set_low_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).set_pin_low_async(self.pin).await }
+    }
+
+    /// Toggle this output pin state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn toggle_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).toggle_pin_async(self.pin).await }
+    }
+
+    /// Read the current state of this output pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_set_high_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        // SAFETY: This is safe because pin operations are atomic and complete immediately
+        unsafe { (*self.device.get()).is_pin_set_high_async(self.pin).await }
+    }
+
+    /// Read the current state of this output pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_set_low_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        Ok(!self.is_set_high_async().await?)
+    }
+}
+
+// Implement embedded-hal digital traits for IoPin
+impl<I2c: embedded_hal::i2c::I2c> embedded_hal::digital::ErrorType for IoPin<'_, I2c> {
+    type Error = Pcal6416aError<I2c::Error>;
+}
+
+impl<I2c: embedded_hal::i2c::I2c> embedded_hal::digital::InputPin for IoPin<'_, I2c> {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
+        IoPin::is_high(self)
+    }
+
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
+        IoPin::is_low(self)
+    }
+}
+
+impl<I2c: embedded_hal::i2c::I2c> embedded_hal::digital::OutputPin for IoPin<'_, I2c> {
+    fn set_low(&mut self) -> Result<(), Self::Error> {
+        IoPin::set_low(self)
+    }
+
+    fn set_high(&mut self) -> Result<(), Self::Error> {
+        IoPin::set_high(self)
+    }
+}
+
+impl<I2c: embedded_hal::i2c::I2c> embedded_hal::digital::StatefulOutputPin for IoPin<'_, I2c> {
+    fn is_set_high(&mut self) -> Result<bool, Self::Error> {
+        IoPin::is_set_high(self)
+    }
+
+    fn is_set_low(&mut self) -> Result<bool, Self::Error> {
+        IoPin::is_set_low(self)
+    }
+
+    fn toggle(&mut self) -> Result<(), Self::Error> {
+        IoPin::toggle(self)
+    }
+}
+
 impl<I2c: embedded_hal::i2c::I2c> Device<Pcal6416aDevice<I2c>> {
     /// Read the state of an input pin
     /// # Errors
@@ -375,6 +581,240 @@ impl<I2c: embedded_hal::i2c::I2c> Device<Pcal6416aDevice<I2c>> {
     /// Will return `Err` if underlying I2C bus operation fails
     pub fn is_pin_set_low(&mut self, pin: Pin) -> Result<bool, Pcal6416aError<I2c::Error>> {
         Ok(!self.is_pin_set_high(pin)?)
+    }
+}
+
+impl<I2c: embedded_hal_async::i2c::I2c> Device<Pcal6416aDevice<I2c>> {
+    /// Read the state of an input pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_pin_high_async(&mut self, pin: Pin) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        let port = pin.port();
+        let bit = pin.bit();
+
+        let value = if port == 0 {
+            let reg = self.input_port_0().read_async().await?;
+            let reg: [u8; 1] = reg.into();
+            reg[0] & (1 << bit) != 0
+        } else {
+            let reg = self.input_port_1().read_async().await?;
+            let reg: [u8; 1] = reg.into();
+            reg[0] & (1 << bit) != 0
+        };
+
+        Ok(value)
+    }
+
+    /// Read the state of an input pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_pin_low_async(&mut self, pin: Pin) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        Ok(!self.is_pin_high_async(pin).await?)
+    }
+
+    /// Set an output pin to high state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn set_pin_high_async(&mut self, pin: Pin) -> Result<(), Pcal6416aError<I2c::Error>> {
+        let port = pin.port();
+        let bit = pin.bit();
+
+        if port == 0 {
+            self.output_port_0()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_0_0(true),
+                    1 => r.set_o_0_1(true),
+                    2 => r.set_o_0_2(true),
+                    3 => r.set_o_0_3(true),
+                    4 => r.set_o_0_4(true),
+                    5 => r.set_o_0_5(true),
+                    6 => r.set_o_0_6(true),
+                    7 => r.set_o_0_7(true),
+                    _ => unreachable!(),
+                })
+                .await
+        } else {
+            self.output_port_1()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_1_0(true),
+                    1 => r.set_o_1_1(true),
+                    2 => r.set_o_1_2(true),
+                    3 => r.set_o_1_3(true),
+                    4 => r.set_o_1_4(true),
+                    5 => r.set_o_1_5(true),
+                    6 => r.set_o_1_6(true),
+                    7 => r.set_o_1_7(true),
+                    _ => unreachable!(),
+                })
+                .await
+        }
+    }
+
+    /// Set an output pin to low state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn set_pin_low_async(&mut self, pin: Pin) -> Result<(), Pcal6416aError<I2c::Error>> {
+        let port = pin.port();
+        let bit = pin.bit();
+
+        if port == 0 {
+            self.output_port_0()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_0_0(false),
+                    1 => r.set_o_0_1(false),
+                    2 => r.set_o_0_2(false),
+                    3 => r.set_o_0_3(false),
+                    4 => r.set_o_0_4(false),
+                    5 => r.set_o_0_5(false),
+                    6 => r.set_o_0_6(false),
+                    7 => r.set_o_0_7(false),
+                    _ => unreachable!(),
+                })
+                .await
+        } else {
+            self.output_port_1()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_1_0(false),
+                    1 => r.set_o_1_1(false),
+                    2 => r.set_o_1_2(false),
+                    3 => r.set_o_1_3(false),
+                    4 => r.set_o_1_4(false),
+                    5 => r.set_o_1_5(false),
+                    6 => r.set_o_1_6(false),
+                    7 => r.set_o_1_7(false),
+                    _ => unreachable!(),
+                })
+                .await
+        }
+    }
+
+    /// Toggle an output pin state (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn toggle_pin_async(&mut self, pin: Pin) -> Result<(), Pcal6416aError<I2c::Error>> {
+        let port = pin.port();
+        let bit = pin.bit();
+
+        if port == 0 {
+            self.output_port_0()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_0_0(!r.o_0_0()),
+                    1 => r.set_o_0_1(!r.o_0_1()),
+                    2 => r.set_o_0_2(!r.o_0_2()),
+                    3 => r.set_o_0_3(!r.o_0_3()),
+                    4 => r.set_o_0_4(!r.o_0_4()),
+                    5 => r.set_o_0_5(!r.o_0_5()),
+                    6 => r.set_o_0_6(!r.o_0_6()),
+                    7 => r.set_o_0_7(!r.o_0_7()),
+                    _ => unreachable!(),
+                })
+                .await
+        } else {
+            self.output_port_1()
+                .modify_async(|r| match bit {
+                    0 => r.set_o_1_0(!r.o_1_0()),
+                    1 => r.set_o_1_1(!r.o_1_1()),
+                    2 => r.set_o_1_2(!r.o_1_2()),
+                    3 => r.set_o_1_3(!r.o_1_3()),
+                    4 => r.set_o_1_4(!r.o_1_4()),
+                    5 => r.set_o_1_5(!r.o_1_5()),
+                    6 => r.set_o_1_6(!r.o_1_6()),
+                    7 => r.set_o_1_7(!r.o_1_7()),
+                    _ => unreachable!(),
+                })
+                .await
+        }
+    }
+
+    /// Read the current state of an output pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_pin_set_high_async(&mut self, pin: Pin) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        let port = pin.port();
+        let bit = pin.bit();
+
+        let value = if port == 0 {
+            let reg = self.output_port_0().read_async().await?;
+            let reg: [u8; 1] = reg.into();
+            reg[0] & (1 << bit) != 0
+        } else {
+            let reg = self.output_port_1().read_async().await?;
+            let reg: [u8; 1] = reg.into();
+            reg[0] & (1 << bit) != 0
+        };
+
+        Ok(value)
+    }
+
+    /// Read the current state of an output pin (async version)
+    /// # Errors
+    ///
+    /// Will return `Err` if underlying I2C bus operation fails
+    pub async fn is_pin_set_low_async(&mut self, pin: Pin) -> Result<bool, Pcal6416aError<I2c::Error>> {
+        Ok(!self.is_pin_set_high_async(pin).await?)
+    }
+}
+
+impl<I2c: embedded_hal::i2c::I2c> Device<Pcal6416aDevice<I2c>> {
+    /// Split the driver into an array of individual pin instances
+    ///
+    /// This borrows the device mutably and returns an array of 16 `IoPin` instances,
+    /// one for each GPIO pin. The pins can be passed individually to different functions.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let mut device = Device::new(Pcal6416aDevice { addr_pin, i2cbus });
+    /// let pins = device.split();
+    ///
+    /// // Pass individual pins to different functions
+    /// use_led(&pins[0]);
+    /// use_button(&pins[1]);
+    ///
+    /// // Or access by index
+    /// pins[2].set_high()?;
+    /// pins[3].set_low()?;
+    ///
+    /// // Iterate over pins
+    /// for (i, pin) in pins.iter().enumerate() {
+    ///     println!("Pin {} number: {}", i, pin.number());
+    /// }
+    /// ```
+    pub fn split(&mut self) -> [IoPin<'_, I2c>; 16] {
+        use core::cell::UnsafeCell;
+
+        // SAFETY: We use UnsafeCell to allow interior mutability.
+        // This is safe because:
+        // 1. Each pin operation is atomic and completes before another starts
+        // 2. The array borrows the device mutably, ensuring exclusive access
+        // 3. All pins share the same device lifetime
+        // 4. This is a common pattern in embedded HAL drivers for sharing hardware
+        let device_cell =
+            unsafe { &*(self as *mut Device<Pcal6416aDevice<I2c>> as *const UnsafeCell<Device<Pcal6416aDevice<I2c>>>) };
+
+        [
+            IoPin::new(Pin::Pin0, device_cell),
+            IoPin::new(Pin::Pin1, device_cell),
+            IoPin::new(Pin::Pin2, device_cell),
+            IoPin::new(Pin::Pin3, device_cell),
+            IoPin::new(Pin::Pin4, device_cell),
+            IoPin::new(Pin::Pin5, device_cell),
+            IoPin::new(Pin::Pin6, device_cell),
+            IoPin::new(Pin::Pin7, device_cell),
+            IoPin::new(Pin::Pin8, device_cell),
+            IoPin::new(Pin::Pin9, device_cell),
+            IoPin::new(Pin::Pin10, device_cell),
+            IoPin::new(Pin::Pin11, device_cell),
+            IoPin::new(Pin::Pin12, device_cell),
+            IoPin::new(Pin::Pin13, device_cell),
+            IoPin::new(Pin::Pin14, device_cell),
+            IoPin::new(Pin::Pin15, device_cell),
+        ]
     }
 }
 
@@ -1358,6 +1798,374 @@ mod tests {
         dev.set_pin_high(Pin::Pin0).unwrap();
         dev.set_pin_high(Pin::Pin1).unwrap();
         assert!(dev.is_pin_high(Pin::Pin7).unwrap());
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn split_pins() {
+        let expectations = vec![
+            // Set pin 0 high
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // Set pin 1 high
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0011]),
+            // Read pin 0
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0011]),
+            // Toggle pin 1
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0011]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+
+            // Use individual pins independently
+            pins[0].set_high().unwrap();
+            pins[1].set_high().unwrap();
+            assert!(pins[0].is_high().unwrap());
+            pins[1].toggle().unwrap();
+        }
+
+        // Verify mock expectations
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn split_pin_numbers() {
+        let expectations = vec![];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+
+            // Verify all 16 pins have correct numbers (0-15)
+            for i in 0..16 {
+                assert_eq!(pins[i].number(), i as u8, "Pin at index {} should have number {}", i, i);
+            }
+
+            // Verify Pin enum values for all pins
+            assert_eq!(pins[0].pin(), Pin::Pin0);
+            assert_eq!(pins[1].pin(), Pin::Pin1);
+            assert_eq!(pins[2].pin(), Pin::Pin2);
+            assert_eq!(pins[3].pin(), Pin::Pin3);
+            assert_eq!(pins[4].pin(), Pin::Pin4);
+            assert_eq!(pins[5].pin(), Pin::Pin5);
+            assert_eq!(pins[6].pin(), Pin::Pin6);
+            assert_eq!(pins[7].pin(), Pin::Pin7);
+            assert_eq!(pins[8].pin(), Pin::Pin8);
+            assert_eq!(pins[9].pin(), Pin::Pin9);
+            assert_eq!(pins[10].pin(), Pin::Pin10);
+            assert_eq!(pins[11].pin(), Pin::Pin11);
+            assert_eq!(pins[12].pin(), Pin::Pin12);
+            assert_eq!(pins[13].pin(), Pin::Pin13);
+            assert_eq!(pins[14].pin(), Pin::Pin14);
+            assert_eq!(pins[15].pin(), Pin::Pin15);
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[test]
+    fn embedded_hal_traits() {
+        use embedded_hal::digital::{InputPin, OutputPin, StatefulOutputPin};
+
+        let expectations = vec![
+            // OutputPin::set_high
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // OutputPin::set_low
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+            // InputPin::is_high (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // InputPin::is_low (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // InputPin::is_high (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // InputPin::is_low (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // StatefulOutputPin::is_set_high (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            // StatefulOutputPin::is_set_low (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            // StatefulOutputPin::toggle (low to high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // StatefulOutputPin::is_set_high (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // StatefulOutputPin::is_set_low (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // StatefulOutputPin::toggle (high to low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let mut pins = dev.split();
+
+            // Test OutputPin trait - set_high
+            OutputPin::set_high(&mut pins[0]).unwrap();
+
+            // Test OutputPin trait - set_low
+            OutputPin::set_low(&mut pins[0]).unwrap();
+
+            // Test InputPin trait - is_high when pin is high
+            assert!(InputPin::is_high(&mut pins[0]).unwrap());
+
+            // Test InputPin trait - is_low when pin is high
+            assert!(!InputPin::is_low(&mut pins[0]).unwrap());
+
+            // Test InputPin trait - is_high when pin is low
+            assert!(!InputPin::is_high(&mut pins[0]).unwrap());
+
+            // Test InputPin trait - is_low when pin is low
+            assert!(InputPin::is_low(&mut pins[0]).unwrap());
+
+            // Test StatefulOutputPin trait - is_set_high when output is low
+            assert!(!StatefulOutputPin::is_set_high(&mut pins[0]).unwrap());
+
+            // Test StatefulOutputPin trait - is_set_low when output is low
+            assert!(StatefulOutputPin::is_set_low(&mut pins[0]).unwrap());
+
+            // Test StatefulOutputPin trait - toggle from low to high
+            StatefulOutputPin::toggle(&mut pins[0]).unwrap();
+
+            // Test StatefulOutputPin trait - is_set_high when output is high
+            assert!(StatefulOutputPin::is_set_high(&mut pins[0]).unwrap());
+
+            // Test StatefulOutputPin trait - is_set_low when output is high
+            assert!(!StatefulOutputPin::is_set_low(&mut pins[0]).unwrap());
+
+            // Test StatefulOutputPin trait - toggle from high to low
+            StatefulOutputPin::toggle(&mut pins[0]).unwrap();
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_set_high() {
+        let expectations = vec![
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            pins[0].set_high_async().await.unwrap();
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_set_low() {
+        let expectations = vec![
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            pins[0].set_low_async().await.unwrap();
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_is_high() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            assert!(pins[0].is_high_async().await.unwrap());
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_is_low() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            assert!(pins[0].is_low_async().await.unwrap());
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_toggle() {
+        let expectations = vec![
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            pins[0].toggle_async().await.unwrap();
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_is_set_high() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            assert!(pins[0].is_set_high_async().await.unwrap());
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn async_pin_is_set_low() {
+        let expectations = vec![Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000])];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let pins = dev.split();
+            assert!(pins[0].is_set_low_async().await.unwrap());
+        }
+
+        dev.interface.i2cbus.done();
+    }
+
+    #[tokio::test]
+    async fn embedded_hal_async_traits() {
+        use embedded_hal_async::digital::{InputPin, OutputPin, StatefulOutputPin};
+
+        let expectations = vec![
+            // OutputPin::set_high
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // OutputPin::set_low
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+            // InputPin::is_high (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // InputPin::is_low (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0001]),
+            // InputPin::is_high (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // InputPin::is_low (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x00], vec![0b0000_0000]),
+            // StatefulOutputPin::is_set_high (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            // StatefulOutputPin::is_set_low (when low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            // StatefulOutputPin::toggle (low to high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0000]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0001]),
+            // StatefulOutputPin::is_set_high (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // StatefulOutputPin::is_set_low (when high)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            // StatefulOutputPin::toggle (high to low)
+            Transaction::write_read(IOEXP_ADDR_LOW, vec![0x02], vec![0b0000_0001]),
+            Transaction::write(IOEXP_ADDR_LOW, vec![0x02, 0b0000_0000]),
+        ];
+        let i2cbus = Mock::new(&expectations);
+        let mut dev = Device::new(Pcal6416aDevice {
+            addr_pin: AddrPinState::Low,
+            i2cbus,
+        });
+
+        {
+            let mut pins = dev.split();
+
+            // Test OutputPin trait - set_high
+            OutputPin::set_high(&mut pins[0]).await.unwrap();
+
+            // Test OutputPin trait - set_low
+            OutputPin::set_low(&mut pins[0]).await.unwrap();
+
+            // Test InputPin trait - is_high when pin is high
+            assert!(InputPin::is_high(&mut pins[0]).await.unwrap());
+
+            // Test InputPin trait - is_low when pin is high
+            assert!(!InputPin::is_low(&mut pins[0]).await.unwrap());
+
+            // Test InputPin trait - is_high when pin is low
+            assert!(!InputPin::is_high(&mut pins[0]).await.unwrap());
+
+            // Test InputPin trait - is_low when pin is low
+            assert!(InputPin::is_low(&mut pins[0]).await.unwrap());
+
+            // Test StatefulOutputPin trait - is_set_high when output is low
+            assert!(!StatefulOutputPin::is_set_high(&mut pins[0]).await.unwrap());
+
+            // Test StatefulOutputPin trait - is_set_low when output is low
+            assert!(StatefulOutputPin::is_set_low(&mut pins[0]).await.unwrap());
+
+            // Test StatefulOutputPin trait - toggle from low to high
+            StatefulOutputPin::toggle(&mut pins[0]).await.unwrap();
+
+            // Test StatefulOutputPin trait - is_set_high when output is high
+            assert!(StatefulOutputPin::is_set_high(&mut pins[0]).await.unwrap());
+
+            // Test StatefulOutputPin trait - is_set_low when output is high
+            assert!(!StatefulOutputPin::is_set_low(&mut pins[0]).await.unwrap());
+
+            // Test StatefulOutputPin trait - toggle from high to low
+            StatefulOutputPin::toggle(&mut pins[0]).await.unwrap();
+        }
+
         dev.interface.i2cbus.done();
     }
 }
