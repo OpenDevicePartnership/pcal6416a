@@ -55,8 +55,14 @@ device_driver::create_device!(
     manifest: "device.yaml"
 );
 
+/// A shared, mutex-protected wrapper around a [`Device`] for concurrent access.
+///
+/// This type wraps a [`Device`] inside an [`embassy_sync::mutex::Mutex`], allowing
+/// multiple async tasks to access the same PCAL6416A device concurrently with
+/// synchronized I2C register access. Use [`SharedDevice::split`] to obtain
+/// individual [`IoPin`] instances that can be passed to different tasks.
 pub struct SharedDevice<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::RawMutex> {
-    pub device: embassy_sync::mutex::Mutex<M, Device<Pcal6416aDevice<I2c>>>,
+    device: embassy_sync::mutex::Mutex<M, Device<Pcal6416aDevice<I2c>>>,
 }
 
 impl<I2c: embedded_hal_async::i2c::I2c> device_driver::AsyncRegisterInterface for Pcal6416aDevice<I2c> {
@@ -687,6 +693,10 @@ impl<I2c: embedded_hal_async::i2c::I2c> Device<Pcal6416aDevice<I2c>> {
 }
 
 impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::RawMutex> SharedDevice<I2c, M> {
+    /// Create a new `SharedDevice` from a [`Device`] instance.
+    ///
+    /// The device is wrapped in a mutex to enable safe shared access
+    /// from multiple [`IoPin`] instances.
     pub fn new(device: Device<Pcal6416aDevice<I2c>>) -> Self {
         Self {
             device: embassy_sync::mutex::Mutex::new(device),
