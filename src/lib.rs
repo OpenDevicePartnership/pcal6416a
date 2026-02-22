@@ -233,7 +233,6 @@ impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::Ra
     ///
     /// Will return `Err` if underlying I2C bus operation fails
     pub async fn is_high_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
-        // SAFETY: This is safe because pin operations are atomic and complete immediately
         self.device.lock().await.is_pin_high_async(self.port, self.pin).await
     }
 
@@ -250,7 +249,6 @@ impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::Ra
     ///
     /// Will return `Err` if underlying I2C bus operation fails
     pub async fn set_high_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
-        // SAFETY: This is safe because pin operations are atomic and complete immediately
         self.device.lock().await.set_pin_high_async(self.port, self.pin).await
     }
 
@@ -259,7 +257,6 @@ impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::Ra
     ///
     /// Will return `Err` if underlying I2C bus operation fails
     pub async fn set_low_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
-        // SAFETY: This is safe because pin operations are atomic and complete immediately
         self.device.lock().await.set_pin_low_async(self.port, self.pin).await
     }
 
@@ -268,7 +265,6 @@ impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::Ra
     ///
     /// Will return `Err` if underlying I2C bus operation fails
     pub async fn toggle_async(&self) -> Result<(), Pcal6416aError<I2c::Error>> {
-        // SAFETY: This is safe because pin operations are atomic and complete immediately
         self.device.lock().await.toggle_pin_async(self.port, self.pin).await
     }
 
@@ -277,7 +273,6 @@ impl<I2c: embedded_hal_async::i2c::I2c, M: embassy_sync::blocking_mutex::raw::Ra
     ///
     /// Will return `Err` if underlying I2C bus operation fails
     pub async fn is_set_high_async(&self) -> Result<bool, Pcal6416aError<I2c::Error>> {
-        // SAFETY: This is safe because pin operations are atomic and complete immediately
         self.device
             .lock()
             .await
