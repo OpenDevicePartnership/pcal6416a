@@ -22,10 +22,13 @@ device-driver = { version = "1.0.7", default-features = false, features = ["yaml
 defmt = { version = "1.0", optional = true }
 embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
+embassy-sync = "0.7.2"
 
 [dev-dependencies]
 embedded-hal-mock = { version = "0.11.1", features = ["embedded-hal-async"] }
 tokio = { version = "1.42.0", features = ["rt", "macros"] }
+embassy-sync = { version = "0.7.2", features = ["std"] }
+critical-section = { version = "1.2", features = ["std"] }
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -40,3 +43,7 @@ pedantic = "deny"
 
 [features]
 defmt = ["dep:defmt", "device-driver/defmt-03"]
+
+[patch.crates-io]
+embedded-hal = {git = "https://github.com/rust-embedded/embedded-hal.git"}
+embedded-hal-async = {git = "https://github.com/rust-embedded/embedded-hal.git"}
