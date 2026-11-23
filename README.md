@@ -4,7 +4,7 @@ A `#[no_std]` platform-agnostic driver for the [PCAL6416A](https://www.nxp.com/d
 
 ## MSRV
 
-Currently, rust `1.81` and up is supported.
+Currently, rust `1.88` and up is supported.
 
 ## License
 
