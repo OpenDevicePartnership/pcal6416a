@@ -16,18 +16,22 @@ include = [
 	"/device.yaml",
 ]
 edition = "2024"
+rust-version = "1.88"
 
 [dependencies]
 device-driver = { version = "1.0.9", default-features = false, features = ["yaml"] }
 defmt = { version = "1.0", optional = true }
-embedded-hal = "1.0.0"
-embedded-hal-async = "1.0.0"
-embassy-sync = "0.7.2"
+# Async digital traits require this unreleased HAL revision, including downstream builds.
+embedded-hal = { version = "1.0.0", git = "https://github.com/rust-embedded/embedded-hal.git", rev = "e6b10a6623db89406784044a4a432cd2fec66a65" }
+embedded-hal-async = { version = "1.0.0", git = "https://github.com/rust-embedded/embedded-hal.git", rev = "e6b10a6623db89406784044a4a432cd2fec66a65" }
+embassy-sync = "0.8.0"
 
 [dev-dependencies]
+# Use defmt's host support instead of requiring an embedded logger in unit tests.
+defmt = { version = "1.0", features = ["unstable-test"] }
 embedded-hal-mock = { version = "0.11.1", features = ["embedded-hal-async"] }
-tokio = { version = "1.42.0", features = ["rt", "macros"] }
-embassy-sync = { version = "0.7.2", features = ["std"] }
+tokio = { version = "1.53.3", features = ["rt", "macros"] }
+embassy-sync = { version = "0.8.0", features = ["std"] }
 critical-section = { version = "1.2", features = ["std"] }
 
 [lints.rust]
@@ -45,5 +49,5 @@ pedantic = "deny"
 defmt = ["dep:defmt", "device-driver/defmt-03"]
 
 [patch.crates-io]
-embedded-hal = {git = "https://github.com/rust-embedded/embedded-hal.git"}
-embedded-hal-async = {git = "https://github.com/rust-embedded/embedded-hal.git"}
+embedded-hal = { git = "https://github.com/rust-embedded/embedded-hal.git", rev = "e6b10a6623db89406784044a4a432cd2fec66a65" }
+embedded-hal-async = { git = "https://github.com/rust-embedded/embedded-hal.git", rev = "e6b10a6623db89406784044a4a432cd2fec66a65" }

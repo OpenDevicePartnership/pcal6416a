@@ -4,7 +4,16 @@ A `#[no_std]` platform-agnostic driver for the [PCAL6416A](https://www.nxp.com/d
 
 ## MSRV
 
-Currently, rust `1.81` and up is supported.
+Currently, rust `1.88` and up is supported.
+
+## HAL source
+
+Git/path consumers use the paired `embedded-hal` and `embedded-hal-async`
+revision `e6b10a6623db89406784044a4a432cd2fec66a65` for the unreleased async
+digital traits. Consumers and their HAL implementations must use the same Git
+URL and revision selector as this crate; registry or default-branch Git trait
+types are not interchangeable with these pinned types. Registry publication
+still uses the version fallback, which does not supply those async traits.
 
 ## License
 
