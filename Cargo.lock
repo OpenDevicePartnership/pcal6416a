@@ -238,12 +238,12 @@ dependencies = [
 [[package]]
 name = "embedded-hal"
 version = "1.0.0"
-source = "git+https://github.com/rust-embedded/embedded-hal.git#e6b10a6623db89406784044a4a432cd2fec66a65"
+source = "git+https://github.com/rust-embedded/embedded-hal.git?rev=e6b10a6623db89406784044a4a432cd2fec66a65#e6b10a6623db89406784044a4a432cd2fec66a65"
 
 [[package]]
 name = "embedded-hal-async"
 version = "1.0.0"
-source = "git+https://github.com/rust-embedded/embedded-hal.git#e6b10a6623db89406784044a4a432cd2fec66a65"
+source = "git+https://github.com/rust-embedded/embedded-hal.git?rev=e6b10a6623db89406784044a4a432cd2fec66a65#e6b10a6623db89406784044a4a432cd2fec66a65"
 dependencies = [
  "embedded-hal 1.0.0",
 ]
@@ -658,9 +658,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.52.3"
+version = "1.53.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fc7f01b389ac15039e4dc9531aa973a135d7a4135281b12d7c1bc79fd57fffe"
+checksum = "ce3335fa71841cda333a58d7615b03901380ecf09d59b3296d21f8bbac0dde4e"
 dependencies = [
  "pin-project-lite",
  "tokio-macros",
